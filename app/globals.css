@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: var(--font-figtree), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  /* Custom scrollbar — Spotify style */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@layer utilities {
+  /* Fade-mask used on the MessageCard preview */
+  .mask-fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  }
+
+  /* Prevents body scroll when a modal is open */
+  .no-scroll {
+    overflow: hidden;
+  }
+
+  /* Safe area padding for mobile notches */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Retrospective progress bar fill — CSS animation so pausing via
+ * animationPlayState actually works (framer's JS animations don't). */
+@keyframes retroBarFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
