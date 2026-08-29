@@ -1,0 +1,46 @@
+# VPS deploy: `docker compose up -d`.
+#
+# Two containers and one volume. SQLite means there is no database service
+# to run, back up separately, or keep patched — the whole persistent state
+# is the ./data directory.
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Paths inside the container, on the mounted volume.
+      DATABASE_PATH: /data/app.db
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - ./data:/data
+    # Not published to the host — Caddy is the only way in.
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Set DOMAIN in .env. Caddy provisions and renews TLS on its own.
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,85 +1,122 @@
-# happyday-public
+# Happyday
 
-Um presente de 1 ano em forma de site: um clone da experiência do Spotify
-(tela "Now Playing", cards, e uma retrospectiva estilo Spotify Wrapped em 11
-slides verticais).
+Um produto que deixa qualquer pessoa montar um site de presente — fotos,
+música, uma carta e uma retrospectiva em onze telas — pagar uma vez e receber
+um link pra mandar no WhatsApp.
 
-Esta é a **versão pública** do projeto — mesma engenharia, mesma direção de
-arte, mas com um casal fictício (Léo & Ana), textos próprios e imagens
-geradas por código. Não há nenhuma foto ou informação pessoal aqui, então ela
-pode ser publicada, forkada e usada como base pra fazer a sua própria.
+Nasceu como um presente de um ano feito à mão para uma pessoa só. O código
+daquele presente ainda está aqui, mas agora tudo que era hardcoded virou um
+objeto de configuração, e há um wizard, um checkout e um banco em volta dele.
 
-## Rodando
+## Rodando local
 
 ```bash
-npm install     # node_modules já vem incluso; rode só se precisar reinstalar
-npm run dev     # http://localhost:3000
-npm run build   # gera o site estático em ./out
+npm install
+cp .env.example .env.local     # os defaults já servem pra desenvolver
+npm run db:migrate             # cria ./data/app.db
+npm run dev                    # http://localhost:3000
 ```
 
-O build usa `output: "export"` — o resultado em `out/` é HTML/CSS/JS estático,
-serve em qualquer lugar (GitHub Pages, Netlify, Vercel, S3, um Apache velho).
+Sem `MP_ACCESS_TOKEN` o checkout responde 503 em vez de fingir que funciona.
+Sem `SMTP_URL` o e-mail de entrega é logado no console em vez de enviado.
 
-## Onde mexer pra fazer a sua versão
-
-Quase todo o conteúdo mora em quatro lugares:
-
-| Arquivo | O que controla |
+| Script | O que faz |
 |---|---|
-| [`components/retrospectiva/content.ts`](components/retrospectiva/content.ts) | Todo o texto e os números da retrospectiva — o filme, as viagens, a música, as contagens, as legendas |
-| [`lib/dates.ts`](lib/dates.ts) | As datas (quando se conheceram, início do namoro, data do presente). Alimentam os contadores |
-| [`app/page.tsx`](app/page.tsx) | A carta, os nomes, e quais fotos entram em cada galeria |
-| [`scripts/gen-artwork.mjs`](scripts/gen-artwork.mjs) | As imagens. Troque por fotos de verdade e este script vira desnecessário |
+| `npm run dev` / `build` / `start` | Next.js |
+| `npm run db:migrate` | aplica as migrations do Drizzle |
+| `npm run db:generate` | gera migration a partir do schema |
+| `npm run artwork` | regera as 38 imagens do exemplo |
+| `npm run audio` | regera as duas faixas instrumentais |
 
-Os nomes (`Léo`, `Ana`) aparecem também em `AnchorCard`, `AboutUsCard`,
-`MessageCard`, `MessageModal`, `MiniCardsSection`, `IntroStory` e
-`PosterStory` — é a única coisa espalhada pelo código.
+## As rotas
 
-## As imagens
+| Rota | O que é |
+|---|---|
+| `/` | landing de vendas |
+| `/demo` | o site de exemplo, renderizado do `DEFAULT_CONFIG` |
+| `/criar` | cria um rascunho e manda pro editor |
+| `/editar/[token]` | o wizard de 6 passos |
+| `/preview/[token]` | o rascunho como o visitante veria, com marca d'água |
+| `/p/[slug]` | **o site publicado** |
+| `/checkout/retorno` | volta do Mercado Pago |
+| `/admin` | painel do operador |
 
-Não há fotografias no repositório. Cada slot de foto é uma **cena vetorial
-desenhada por código** e rasterizada pra JPEG:
+## Como o conteúdo funciona
+
+Todo o conteúdo de um site vive num único objeto serializável, o
+[`SiteConfig`](lib/config/schema.ts), guardado como JSON numa coluna. Nenhum
+componente tem texto fixo: eles leem de `useSiteConfig()`. É isso que faz um
+mesmo código servir todo mundo.
+
+Duas regras que o schema impõe e que valem saber:
+
+- **Datas são strings `"AAAA-MM-DD"`, nunca `Date`.** Além do config precisar
+  ser JSON, `new Date("2025-02-14")` parseia como UTC — no Brasil isso é dia
+  13 às 21h, e todo contador de dias sairia errado por um.
+- **Caminhos de asset são validados por regex.** Config é conteúdo de
+  usuário; sem isso alguém aponta uma foto pra um domínio externo e vaza o IP
+  de quem visita.
+
+Em `retro.slides`, cada uma das onze telas tem seu próprio `enabled` — as
+desligadas nem chegam a montar, e as barras de progresso se ajustam sozinhas.
+
+## Sem autenticação
+
+Ninguém cria conta. Um rascunho gera um `editToken` de 128 bits que é a única
+credencial do produto: quem tem, edita. Ele viaja no path em `/editar` (é o
+bookmark e o link do e-mail) e em header `x-edit-token` na API, pra não cair
+nos logs de acesso.
+
+## Fotos
+
+Toda foto enviada passa por `sharp` antes de tocar o disco: rotação do EXIF
+aplicada, imagem redimensionada, reencodada como JPEG — o que descarta o
+bloco EXIF inteiro, **incluindo a coordenada de GPS**. São fotos de casal num
+link que circula; essa informação não pode sobreviver ao upload.
+
+O arquivo é nomeado pelo hash dos bytes já processados, então a URL nunca
+muda de conteúdo e pode ser cacheada pra sempre.
+
+## Assets do exemplo
+
+Não há nenhuma foto real nem música de terceiros no repositório:
+
+- As 38 imagens são cenas vetoriais desenhadas por `scripts/gen-artwork.mjs`.
+- As duas faixas são sintetizadas por `scripts/gen-audio.mjs`.
+
+Para trocar o exemplo por fotos de verdade, com licença comercial e crédito:
 
 ```bash
-npm run artwork   # regenera as 39 imagens em public/
+PEXELS_API_KEY=<sua chave> node scripts/fetch-photos.mjs
 ```
 
-As cenas são determinísticas (mesma seed, mesma imagem), então rodar de novo
-não embaralha a galeria. Cada uma corresponde ao que aquele momento é: o
-cinema no slide do filme ruim, o pôr do sol na praia da primeira viagem, os
-dois cafés na foto favorita.
+## Deploy (VPS)
 
-Isso também mantém o `useImagePalette` funcionando — ele extrai a cor
-dominante de cada imagem em runtime pra pintar o fundo do player, e uma cena
-com paleta real dá um resultado tão bom quanto uma foto.
+```bash
+cp .env.example .env      # preencha DOMAIN, MP_*, SMTP_URL, ADMIN_TOKEN
+docker compose up -d      # app + Caddy com TLS automático
+```
 
-**Pra usar fotos de verdade:** dropar os arquivos por cima, mantendo os
-caminhos em `public/photos/`. Nenhum código muda.
+O container migra o banco antes de servir. Tudo que não dá pra reconstruir
+vive em `./data` — o SQLite e os uploads.
 
-## Áudio
+Duas tarefas no cron do host:
 
-`public/audio/` contém as duas faixas usadas (a do site e a da retrospectiva).
-São arquivos de música comercial — se for publicar, troque por algo que você
-tenha direito de distribuir.
+```cron
+0 3 * * * cd /srv/happyday && ./scripts/backup.sh >> /var/log/happyday-backup.log 2>&1
+0 4 * * * curl -fsS -X POST -H "Authorization: Bearer $ADMIN_TOKEN" https://SEU-DOMINIO/api/admin/sweep
+```
+
+A primeira faz snapshot consistente do banco (`VACUUM INTO`, que não briga
+com o WAL), verifica a integridade e guarda 14 dias. A segunda apaga
+rascunhos parados há 30 dias e expira sites vencidos.
 
 ## Stack
 
-Next.js 15 (App Router, static export) · React 19 · TypeScript · Tailwind 3 ·
-Framer Motion · lucide-react. Sem backend, sem banco, sem tracking.
+Next.js 16 (App Router, standalone) · React 19 · TypeScript · Tailwind 3 ·
+Framer Motion · Drizzle + SQLite · sharp · Zod · Mercado Pago · Caddy.
 
-## Estrutura
+## Estado
 
-```
-app/                      layout + página única (todos os cards empilhados)
-components/
-  cards/                  os 5 cards da home
-  layout/                 CardContainer (espaçamento + entrada em scroll)
-  modals/                 full-screen, carta, carrossel de fotos
-  retrospectiva/          o player de stories
-    stories/              os 11 slides
-  ui/                     Button, CountdownTimer, DynamicGradientBg
-hooks/useImagePalette.ts  quantizador de cor via canvas
-lib/                      datas + utilitários (cn, formatTime, fadeAudio)
-scripts/gen-artwork.mjs   gerador das imagens
-docs/superpowers/specs/   os design docs da retrospectiva
-```
+Ver [PRODUCT.md](PRODUCT.md) pro plano e [PROGRESS.md](PROGRESS.md) pro que
+está feito, o que falta e por quê.
