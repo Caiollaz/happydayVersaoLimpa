@@ -597,7 +597,7 @@ const SHOTS = [
   { out: "photos/fav-photo.jpeg", w: 1200, h: 2000, scene: "cafe", pal: "ambar", seed: 202 },
 
   // Vinyl cover for the retrospective track — tropical, matches the song.
-  { out: "covers/harleys-in-hawaii.jpg", w: 1200, h: 1200, scene: "praia", pal: "turquesa", seed: 303 },
+  { out: "covers/nossa-cancao.jpg", w: 1200, h: 1200, scene: "praia", pal: "turquesa", seed: 303 },
 
   // Player covers — the nine that rotate on the fake "Now Playing" screen.
   { out: "photos/player-covers/FOTO1.jpeg", scene: "praia", pal: "porDoSol", couple: true, seed: 11 },
