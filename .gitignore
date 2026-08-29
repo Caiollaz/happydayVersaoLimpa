@@ -31,3 +31,32 @@ next-env.d.ts
 
 # editor / tooling scratch
 .superpowers/
+
+# Runtime state — SQLite database and user uploads live here.
+/data
+
+# Backups. scripts/backup.sh writes here by default, and each file is a full
+# copy of the database: customer emails and every editToken, which are the
+# only credential this product has. A single accidental commit publishes all
+# of them.
+/backups
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Credentials and keys, in case one ever lands in the tree by hand.
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+.npmrc
+.netrc
+
+# Local tooling noise.
+.DS_Store
+*.log
+.idea/
+.vscode/
