@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
+import { useSiteConfig, useText } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -13,7 +13,10 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * drop for the photo slides that follow.
  */
 export function OurSongStory(_props: StoryProps) {
-  const { title, artist, coverSrc, verse } = RETRO_CONTENT.song;
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.song;
+  const { title, artist, coverSrc, verse } = slide;
 
   return (
     <section className="relative h-full w-full overflow-hidden">
@@ -46,7 +49,7 @@ export function OurSongStory(_props: StoryProps) {
           transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/80 mb-8"
         >
-          Nossa música
+          {slide.eyebrow}
         </motion.p>
 
         {/* Vinyl: cover inside a black disc, spinning */}

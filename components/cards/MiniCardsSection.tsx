@@ -4,28 +4,20 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CardContainer } from "@/components/layout/CardContainer";
 import { PhotoCarouselModal } from "@/components/modals/PhotoCarouselModal";
-
-interface MiniCard {
-  id: string;
-  title: string;
-  /** Photos shown inside the carousel modal when clicked */
-  photos: string[];
-  /** Thumbnail shown on the mini-card itself */
-  thumbnail: string;
-}
-
-interface MiniCardsSectionProps {
-  items: MiniCard[];
-}
+import { useSiteConfig } from "@/lib/config/context";
 
 /**
- * "Conheça Léo & Ana" — follows the Pencil prototype:
+ * "Conheça <autor> e <destinatária>" — follows the Pencil prototype:
  * a single outer card containing a horizontal gallery of 3 mini-cards,
  * each one a clickable thumbnail that opens a full-screen photo carousel.
  */
-export function MiniCardsSection({ items }: MiniCardsSectionProps) {
+export function MiniCardsSection() {
+  const { galleries: items, couple } = useSiteConfig();
   const [activeId, setActiveId] = useState<string | null>(null);
   const active = items.find((i) => i.id === activeId) ?? null;
+
+  // Nothing to show if the couple removed every album.
+  if (items.length === 0) return null;
 
   return (
     <>
@@ -37,12 +29,12 @@ export function MiniCardsSection({ items }: MiniCardsSectionProps) {
           transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-[460px] rounded-2xl bg-spotify-card border border-white/[0.06] p-5 shadow-2xl shadow-black/40"
         >
-          {/* Inline title — "Léo" highlighted in Spotify green */}
+          {/* Inline title — the author's name highlighted in Spotify green */}
           <h2 className="flex flex-wrap items-center gap-x-1.5 text-xl sm:text-2xl font-bold text-white tracking-tight leading-tight">
             <span>Conheça</span>
-            <span className="text-spotify-green">Léo</span>
+            <span className="text-spotify-green">{couple.authorName}</span>
             <span>e</span>
-            <span>Ana</span>
+            <span>{couple.recipientName}</span>
           </h2>
 
           {/* Gallery — 3 mini-cards side by side, fill container */}

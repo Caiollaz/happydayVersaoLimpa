@@ -3,18 +3,17 @@
 import { motion } from "framer-motion";
 import { CardContainer } from "@/components/layout/CardContainer";
 import { CountdownTimer } from "@/components/ui/CountdownTimer";
-
-interface AboutUsCardProps {
-  photoSrc: string;
-  startDate: Date;
-}
+import { useSiteConfig, useDates } from "@/lib/config/context";
 
 /**
  * "Sobre o casal" card — follows the Pencil prototype:
  * a single vertical card with a hero image on top (photo + overlaid title)
  * and a body below containing the couple name and a 3×2 stats grid timer.
  */
-export function AboutUsCard({ photoSrc, startDate }: AboutUsCardProps) {
+export function AboutUsCard() {
+  const { about, couple } = useSiteConfig();
+  const { relationshipStart } = useDates();
+
   return (
     <CardContainer id="card-about" className="bg-spotify-black">
       <motion.div
@@ -28,7 +27,7 @@ export function AboutUsCard({ photoSrc, startDate }: AboutUsCardProps) {
         <div
           className="relative h-[280px] w-full"
           style={{
-            backgroundImage: `url(${photoSrc})`,
+            backgroundImage: `url(${about.photo})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -55,7 +54,7 @@ export function AboutUsCard({ photoSrc, startDate }: AboutUsCardProps) {
           {/* Title — top-left, matching proto */}
           <div className="relative p-5 safe-top">
             <h2 className="text-xl font-bold text-white tracking-tight">
-              Sobre o casal
+              {about.heading}
             </h2>
           </div>
         </div>
@@ -65,15 +64,17 @@ export function AboutUsCard({ photoSrc, startDate }: AboutUsCardProps) {
           {/* Name block */}
           <div className="flex flex-col gap-1">
             <h3 className="text-[22px] font-bold leading-tight text-white tracking-tight">
-              Léo <span className="text-spotify-green">&amp;</span> Ana
+              {couple.authorName}{" "}
+              <span className="text-spotify-green">&amp;</span>{" "}
+              {couple.recipientName}
             </h3>
             <p className="text-sm font-normal text-spotify-text-secondary">
-              Juntos desde 2025
+              {about.subtitle}
             </p>
           </div>
 
           {/* Stats grid — CountdownTimer renders 3×2 cells */}
-          <CountdownTimer startDate={startDate} />
+          <CountdownTimer startDate={relationshipStart} />
         </div>
       </motion.div>
     </CardContainer>

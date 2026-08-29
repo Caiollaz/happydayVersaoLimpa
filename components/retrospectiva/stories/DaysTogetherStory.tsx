@@ -3,7 +3,8 @@
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useState } from "react";
 import type { StoryProps } from "../storiesConfig";
-import { COUPLE_MET_DATE, daysBetween } from "@/lib/dates";
+import { daysBetween } from "@/lib/config/schema";
+import { useSiteConfig, useText, useDates } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -13,7 +14,11 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * but feel distinct.
  */
 export function DaysTogetherStory(_props: StoryProps) {
-  const [target] = useState(() => daysBetween(COUPLE_MET_DATE, new Date()));
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.days;
+  const met = useDates().met;
+  const [target] = useState(() => daysBetween(met, new Date()));
   const mv = useMotionValue(0);
   const display = useTransform(mv, (v) => Math.round(v).toLocaleString("pt-BR"));
   const [rendered, setRendered] = useState("0");
@@ -61,7 +66,7 @@ export function DaysTogetherStory(_props: StoryProps) {
           transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/80 mb-6"
         >
-          Dias juntos
+          {slide.eyebrow}
         </motion.p>
 
         <motion.div
@@ -80,7 +85,7 @@ export function DaysTogetherStory(_props: StoryProps) {
           transition={{ duration: 0.8, ease: EASE, delay: 1.1 }}
           className="mt-5 text-lg sm:text-xl text-white/85 max-w-md leading-snug"
         >
-          dias de nós dois
+          {t(slide.caption)}
         </motion.p>
       </div>
     </section>

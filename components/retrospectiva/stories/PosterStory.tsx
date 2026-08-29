@@ -2,29 +2,34 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
-import { COUPLE_MET_DATE, daysBetween } from "@/lib/dates";
+import { daysBetween } from "@/lib/config/schema";
+import { useSiteConfig, useDates } from "@/lib/config/context";
 import { useState } from "react";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
  * Slide 9 — "Recap em números". Spotify-green poster with the headline
- * "2025 → 2026", the couple names, and a 2x2 grid of highlight stats derived
- * from the same sources used in earlier slides. Shareable-feeling card with
- * rounded blur bloom in the corners.
+ * the span of years, the couple names, and a 2x2 grid of highlight stats
+ * derived from the same sources used in earlier slides. Shareable-feeling
+ * card with rounded blur bloom in the corners.
  */
 export function PosterStory(_props: StoryProps) {
-  const [days] = useState(() => daysBetween(COUPLE_MET_DATE, new Date()));
-  const trips = RETRO_CONTENT.trips.destinations.length;
-  const messages = RETRO_CONTENT.messages.total.toLocaleString("pt-BR");
-  const song = RETRO_CONTENT.song.title;
+  const { retro, couple } = useSiteConfig();
+  const { met, gift } = useDates();
+  const slide = retro.slides.poster;
+  const labels = slide.statLabels;
+
+  const [days] = useState(() => daysBetween(met, new Date()));
+  const trips = retro.slides.trips.destinations.length;
+  const messages = retro.slides.messages.total.toLocaleString("pt-BR");
+  const song = retro.slides.song.title;
 
   const stats = [
-    { label: "Dias juntos",     value: days.toLocaleString("pt-BR") },
-    { label: "Mensagens",       value: messages },
-    { label: "Viagens",         value: String(trips).padStart(2, "0") },
-    { label: "Música do ano",   value: song, small: true },
+    { label: labels.days,     value: days.toLocaleString("pt-BR") },
+    { label: labels.messages, value: messages },
+    { label: labels.trips,    value: String(trips).padStart(2, "0") },
+    { label: labels.song,     value: song, small: true },
   ];
 
   return (
@@ -61,7 +66,7 @@ export function PosterStory(_props: StoryProps) {
           transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/85 mb-4"
         >
-          Nosso ano
+          {slide.eyebrow}
         </motion.p>
 
         <motion.h2
@@ -70,7 +75,8 @@ export function PosterStory(_props: StoryProps) {
           transition={{ duration: 0.9, ease: EASE, delay: 0.4 }}
           className="text-[14vw] sm:text-[9vw] md:text-7xl font-black leading-[0.9] text-white tracking-tight"
         >
-          2025 <span className="text-[#F5C36A]">→</span> 2026
+          {met.getFullYear()}{" "}
+          <span className="text-[#F5C36A]">→</span> {gift.getFullYear()}
         </motion.h2>
 
         <motion.p
@@ -79,7 +85,7 @@ export function PosterStory(_props: StoryProps) {
           transition={{ duration: 0.8, ease: EASE, delay: 0.75 }}
           className="mt-2 text-xl sm:text-2xl font-extrabold text-white/90"
         >
-          Léo &amp; Ana
+          {couple.authorName} &amp; {couple.recipientName}
         </motion.p>
 
         <div className="mt-8 grid grid-cols-2 gap-3">

@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
-import { COUPLE_MET_DATE } from "@/lib/dates";
+import { useSiteConfig, useText, useDates } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -13,7 +12,10 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * intimate entry after the loud Intro.
  */
 export function WhereStartedStory(_props: StoryProps) {
-  const d = COUPLE_MET_DATE;
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.whereStarted;
+  const d = useDates().met;
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
@@ -49,7 +51,7 @@ export function WhereStartedStory(_props: StoryProps) {
           transition={{ duration: 0.7, ease: EASE, delay: 0.25 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/80 mb-8"
         >
-          Onde começou
+          {slide.eyebrow}
         </motion.p>
 
         <div className="font-black leading-[0.82] tracking-tight text-[#F5C36A]">
@@ -85,7 +87,7 @@ export function WhereStartedStory(_props: StoryProps) {
           transition={{ duration: 0.85, ease: EASE, delay: 1.35 }}
           className="mt-6 text-base sm:text-lg text-white/85 max-w-md leading-snug italic"
         >
-          {RETRO_CONTENT.whereStarted.context}
+          {t(slide.context)}
         </motion.p>
       </div>
     </section>

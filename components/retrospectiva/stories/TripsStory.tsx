@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
+import { useSiteConfig } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -14,12 +14,14 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  *
  * The map SVG is schematic, not geographic — a vertical coastline on the
  * left, two pings offset into the water, and a dashed gold line connecting
- * them. Pin colors come from `RETRO_CONTENT.trips.destinations[*].color`
+ * them. Pin colors come from `retro.slides.trips.destinations[*].color`
  * so the legend (list bullets) matches the map automatically.
  */
 export function TripsStory(_props: StoryProps) {
-  const destinations = RETRO_CONTENT.trips.destinations;
-  const label = RETRO_CONTENT.trips.label;
+  const { retro } = useSiteConfig();
+  const slide = retro.slides.trips;
+  const destinations = slide.destinations;
+  const label = slide.label;
 
   // Pin positions on the mini-map viewBox (80 × 100). First destination in
   // the list rides higher (north), second rides lower.
@@ -59,7 +61,7 @@ export function TripsStory(_props: StoryProps) {
           transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/85 mb-4"
         >
-          Viagens
+          {slide.eyebrow}
         </motion.p>
 
         <div className="flex items-start gap-5">

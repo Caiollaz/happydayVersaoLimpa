@@ -7,13 +7,24 @@ interface MessageModalProps {
   onClose: () => void;
   title: string;
   message: string;
+  /** Line above the sign-off. */
+  signatureLabel: string;
+  /** The sign-off itself. */
+  signature: string;
 }
 
 /**
  * Reads the full love letter in a Spotify-style full-screen overlay.
  * Paragraphs are split on blank lines.
  */
-export function MessageModal({ open, onClose, title, message }: MessageModalProps) {
+export function MessageModal({
+  open,
+  onClose,
+  title,
+  message,
+  signatureLabel,
+  signature,
+}: MessageModalProps) {
   const paragraphs = message
     .split(/\n\s*\n/)
     .map((p) => p.trim())
@@ -42,8 +53,10 @@ export function MessageModal({ open, onClose, title, message }: MessageModalProp
 
           {/* Signature */}
           <div className="mt-14 pt-8 border-t border-white/10">
-            <p className="text-sm text-spotify-text-secondary">Com todo meu amor,</p>
-            <p className="text-2xl font-bold text-white mt-1">Léo 💚</p>
+            <p className="text-sm text-spotify-text-secondary">
+              {signatureLabel}
+            </p>
+            <p className="text-2xl font-bold text-white mt-1">{signature}</p>
           </div>
         </div>
       </div>

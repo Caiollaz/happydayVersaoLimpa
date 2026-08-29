@@ -2,11 +2,19 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import type { SpotifyPlayerCardHandle } from "@/components/cards/SpotifyPlayerCard";
 import { fadeAudio } from "@/lib/utils";
 import { ProgressBars } from "./ProgressBars";
 import { STORIES } from "./storiesConfig";
+import { useSiteConfig } from "@/lib/config/context";
 
 interface StoryPlayerProps {
   open: boolean;
@@ -43,6 +51,8 @@ export function StoryPlayer({
   mainPlayerRef,
   retroAudioSrc,
 }: StoryPlayerProps) {
+  const { slides } = useSiteConfig().retro;
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const didMount = useRef(false);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -52,8 +62,15 @@ export function StoryPlayer({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  const total = STORIES.length;
-  const active = STORIES[currentIndex];
+  // Slides the couple switched off in the wizard never mount, so the
+  // progress bars and the swipe indices line up with what is on screen.
+  const stories = useMemo(
+    () => STORIES.filter((s) => slides[s.id].enabled),
+    [slides],
+  );
+
+  const total = stories.length;
+  const active = stories[currentIndex];
 
   const next = useCallback(() => {
     setCurrentIndex((i) => Math.min(i + 1, total - 1));
@@ -170,6 +187,9 @@ export function StoryPlayer({
       setIsPaused(false);
     }
   };
+
+  // Every slide switched off — nothing to play.
+  if (!active) return null;
 
   const ActiveComponent = active.Component;
 

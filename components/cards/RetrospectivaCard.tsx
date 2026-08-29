@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Disc3 } from "lucide-react";
 import { CardContainer } from "@/components/layout/CardContainer";
 import { Button } from "@/components/ui/Button";
+import { useSiteConfig } from "@/lib/config/context";
 
 interface RetrospectivaCardProps {
   /** Fired when the user clicks "Vamos lá" — opens the StoryPlayer overlay. */
@@ -15,6 +16,8 @@ interface RetrospectivaCardProps {
  * the full-screen <StoryPlayer /> (mounted in app/page.tsx).
  */
 export function RetrospectivaCard({ onStart }: RetrospectivaCardProps) {
+  const { retroCard } = useSiteConfig();
+
   return (
     <CardContainer id="card-retrospectiva">
       <div className="relative w-full max-w-md">
@@ -47,18 +50,18 @@ export function RetrospectivaCard({ onStart }: RetrospectivaCardProps) {
             <div className="flex items-center gap-2">
               <Disc3 className="h-5 w-5" strokeWidth={2.25} />
               <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em]">
-                Retrospectiva
+                {retroCard.eyebrow}
               </span>
             </div>
 
             <div>
               <h2 className="text-[2rem] sm:text-5xl md:text-6xl font-black leading-[0.95] tracking-tight">
-                <span className="text-[#F5C36A]">Nossa</span>
+                <span className="text-[#F5C36A]">{retroCard.titleTop}</span>
                 <br />
-                retrospectiva
+                {retroCard.titleBottom}
               </h2>
               <p className="mt-3 sm:mt-4 text-sm sm:text-base text-white/85 max-w-xs">
-                Explore o nosso tempo de casal em uma experiência feita pra você.
+                {retroCard.description}
               </p>
             </div>
 
@@ -69,7 +72,7 @@ export function RetrospectivaCard({ onStart }: RetrospectivaCardProps) {
                 onClick={onStart}
                 className="bg-white text-black hover:bg-white/90 border-transparent shadow-xl sm:px-7 sm:py-3 sm:text-base"
               >
-                Vamos lá
+                {retroCard.ctaLabel}
               </Button>
             </div>
           </div>
