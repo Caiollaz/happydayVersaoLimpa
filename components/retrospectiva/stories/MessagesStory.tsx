@@ -3,7 +3,7 @@
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useState } from "react";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
+import { useSiteConfig, useText } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -12,7 +12,10 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * tones, counted up from 0.
  */
 export function MessagesStory(_props: StoryProps) {
-  const target = RETRO_CONTENT.messages.total;
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.messages;
+  const target = slide.total;
   const mv = useMotionValue(0);
   const display = useTransform(mv, (v) => Math.round(v).toLocaleString("pt-BR"));
   const [rendered, setRendered] = useState("0");
@@ -60,7 +63,7 @@ export function MessagesStory(_props: StoryProps) {
           transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/85 mb-6"
         >
-          Mensagens trocadas
+          {slide.eyebrow}
         </motion.p>
 
         <motion.div
@@ -79,7 +82,7 @@ export function MessagesStory(_props: StoryProps) {
           transition={{ duration: 0.8, ease: EASE, delay: 1.1 }}
           className="mt-5 text-lg sm:text-xl text-white/85 max-w-md leading-snug"
         >
-          e nenhuma delas deu conta de explicar o que eu sinto.
+          {t(slide.caption)}
         </motion.p>
       </div>
     </section>

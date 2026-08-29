@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
+import { useSiteConfig, useText } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -40,7 +40,10 @@ const SLOTS: Slot[] = [
 ];
 
 export function PhotosCountStory(_props: StoryProps) {
-  const { countLabel, collage } = RETRO_CONTENT.photos;
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.photos;
+  const { countLabel, collage } = slide;
 
   return (
     <section className="relative h-full w-full overflow-hidden">
@@ -107,7 +110,7 @@ export function PhotosCountStory(_props: StoryProps) {
           transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/85 mb-4"
         >
-          Fotos guardadas
+          {slide.eyebrow}
         </motion.p>
 
         <motion.div
@@ -126,7 +129,7 @@ export function PhotosCountStory(_props: StoryProps) {
           transition={{ duration: 0.8, ease: EASE, delay: 1.1 }}
           className="mt-4 text-base sm:text-lg text-white/90 max-w-md text-center"
         >
-          momentos que a gente guardou pra sempre
+          {t(slide.caption)}
         </motion.p>
       </div>
     </section>

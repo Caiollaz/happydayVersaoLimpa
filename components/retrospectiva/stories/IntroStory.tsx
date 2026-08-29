@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
+import { useSiteConfig, useText } from "@/lib/config/context";
 
 /**
  * Slide 1 — the opener. Spotify-Wrapped aesthetic: saturated gradient
@@ -10,6 +11,10 @@ import type { StoryProps } from "../storiesConfig";
  * entrance (eyebrow → names → sub).
  */
 export function IntroStory(_props: StoryProps) {
+  const { retro, couple } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.intro;
+
   return (
     <section className="relative h-full w-full overflow-hidden">
       {/* Base gradient — hot pink → deep rose → near-black burgundy. Direction
@@ -52,10 +57,10 @@ export function IntroStory(_props: StoryProps) {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/80 mb-7 sm:mb-9"
         >
-          Retrospectiva
+          {slide.eyebrow}
         </motion.p>
 
-        {/* Names — stacked: Léo / e (gold italic) / Ana */}
+        {/* Names — stacked: author / e (gold italic) / recipient */}
         <h1 className="font-black leading-[0.82] tracking-tight text-white">
           <motion.span
             initial={{ opacity: 0, y: 48, scale: 0.94 }}
@@ -63,7 +68,7 @@ export function IntroStory(_props: StoryProps) {
             transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.55 }}
             className="block text-[17vw] sm:text-[14vw] md:text-[11rem]"
           >
-            Léo
+            {couple.authorName}
           </motion.span>
           <motion.span
             initial={{ opacity: 0, x: -20 }}
@@ -79,7 +84,7 @@ export function IntroStory(_props: StoryProps) {
             transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 1.05 }}
             className="block text-[17vw] sm:text-[14vw] md:text-[11rem]"
           >
-            Ana
+            {couple.recipientName}
           </motion.span>
         </h1>
 
@@ -90,7 +95,7 @@ export function IntroStory(_props: StoryProps) {
           transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 1.5 }}
           className="mt-7 sm:mt-9 text-base sm:text-lg text-white/85 max-w-md leading-snug"
         >
-          os momentos que viraram história
+          {t(slide.subhead)}
         </motion.p>
       </div>
     </section>

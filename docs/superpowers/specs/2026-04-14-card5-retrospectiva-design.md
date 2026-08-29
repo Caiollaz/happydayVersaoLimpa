@@ -174,7 +174,7 @@ Datas do relacionamento centralizadas onde já moram hoje (`app/page.tsx` passa 
 
 | Asset | Status | Onde |
 |---|---|---|
-| Capa "Harleys in Hawaii" (álbum Smile, Katy Perry) | ❌ baixar | `public/covers/harleys-in-hawaii.jpg` |
+| Capa da música (arte gerada por `scripts/gen-artwork.mjs`) | ✅ gerada | `public/covers/nossa-cancao.jpg` |
 | 5–7 fotos pra colagem do slide "Fotos juntos" | ♻️ reusar | fotos já existentes em `public/photos/player-covers/FOTO{1..9}.jpeg` |
 | Foto favorita (slide 8) — vertical, funciona full-bleed | ❌ Léo escolhe | `public/photos/fav.jpeg` |
 

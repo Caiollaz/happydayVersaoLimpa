@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
+import { useSiteConfig, useText } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -13,7 +13,11 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * underlying image.
  */
 export function FavPhotoStory(_props: StoryProps) {
-  const { src, caption } = RETRO_CONTENT.favPhoto;
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.favPhoto;
+  const src = slide.src;
+  const caption = t(slide.caption);
 
   return (
     <section className="relative h-full w-full overflow-hidden bg-black">
@@ -45,7 +49,7 @@ export function FavPhotoStory(_props: StoryProps) {
           transition={{ duration: 0.7, ease: EASE, delay: 0.3 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/85"
         >
-          Nossa foto favorita
+          {slide.eyebrow}
         </motion.p>
 
         <motion.p

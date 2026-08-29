@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
+import { useSiteConfig, useText } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -14,7 +14,11 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * the only slide that receives/uses `onClose`.
  */
 export function WhatsNextStory({ onClose }: StoryProps) {
-  const { phrase, backLabel } = RETRO_CONTENT.whatsNext;
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const slide = retro.slides.whatsNext;
+  const { backLabel } = slide;
+  const phrase = t(slide.phrase);
 
   return (
     <section className="relative h-full w-full overflow-hidden">
@@ -47,7 +51,7 @@ export function WhatsNextStory({ onClose }: StoryProps) {
           transition={{ duration: 0.6, ease: EASE, delay: 0.3 }}
           className="text-[11px] font-bold uppercase tracking-[0.35em] text-white/80 mb-8"
         >
-          um pequeno resumo
+          {slide.eyebrow}
         </motion.p>
 
         <motion.h2

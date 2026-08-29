@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { StoryProps } from "../storiesConfig";
-import { RETRO_CONTENT } from "../content";
+import { useSiteConfig, useText } from "@/lib/config/context";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -15,7 +15,10 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * companhia não.").
  */
 export function MovieStory(_props: StoryProps) {
-  const { eyebrow, title, date, tagline1, tagline2, rating } = RETRO_CONTENT.movie;
+  const { retro } = useSiteConfig();
+  const t = useText();
+  const { eyebrow, title, date, tagline1, tagline2, rating } =
+    retro.slides.movie;
 
   // Render 10 stars: `rating` filled, the rest empty.
   const stars = Array.from({ length: 10 }, (_, i) => (i < rating ? "★" : "☆"));
@@ -90,8 +93,8 @@ export function MovieStory(_props: StoryProps) {
           className="mt-10 text-center italic text-[#F5C36A] leading-tight"
           style={{ fontSize: "clamp(14px, 3.4vw, 18px)" }}
         >
-          <p>{tagline1}</p>
-          <p>{tagline2}</p>
+          <p>{t(tagline1)}</p>
+          <p>{t(tagline2)}</p>
         </motion.div>
 
         <motion.div

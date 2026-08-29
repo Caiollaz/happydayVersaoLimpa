@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { Highlight } from "@/components/ui/Highlight";
+import { useSiteConfig, useText, useDates } from "@/lib/config/context";
 
 interface AnchorCardProps {
   /**
@@ -20,6 +22,17 @@ interface AnchorCardProps {
  * as the "user gesture" that unlocks browser audio autoplay.
  */
 export function AnchorCard({ onStart }: AnchorCardProps) {
+  const { anchor } = useSiteConfig();
+  const t = useText();
+  const { gift } = useDates();
+
+  // "05 · 04 · 2026" — the occasion, not today.
+  const giftLabel = [
+    String(gift.getDate()).padStart(2, "0"),
+    String(gift.getMonth() + 1).padStart(2, "0"),
+    gift.getFullYear(),
+  ].join(" · ");
+
   const handleStart = () => {
     onStart?.();
   };
@@ -58,7 +71,7 @@ export function AnchorCard({ onStart }: AnchorCardProps) {
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="text-xs sm:text-sm font-semibold uppercase tracking-[0.3em] text-spotify-green mb-6"
         >
-          05 · 04 · 2026
+          {giftLabel}
         </motion.p>
 
         <motion.h1
@@ -67,8 +80,7 @@ export function AnchorCard({ onStart }: AnchorCardProps) {
           transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="text-4xl sm:text-6xl md:text-7xl font-black leading-[1.02] tracking-tight text-white"
         >
-          Léo preparou um{" "}
-          <span className="text-spotify-green">presente</span> especial
+          <Highlight text={t(anchor.headline)} />
         </motion.h1>
 
         <motion.p
@@ -77,7 +89,7 @@ export function AnchorCard({ onStart }: AnchorCardProps) {
           transition={{ duration: 0.9, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
           className="mt-6 text-base sm:text-lg text-spotify-text-secondary max-w-md"
         >
-          1 ano. Muitos capítulos. Uma retrospectiva feita pra você.
+          {t(anchor.subhead)}
         </motion.p>
 
         <motion.div
@@ -87,7 +99,7 @@ export function AnchorCard({ onStart }: AnchorCardProps) {
           className="mt-10"
         >
           <Button size="lg" onClick={handleStart} className="px-10">
-            Ver presente
+            {t(anchor.ctaLabel)}
           </Button>
         </motion.div>
       </div>
