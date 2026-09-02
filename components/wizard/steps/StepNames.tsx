@@ -16,17 +16,16 @@ export function StepNames({ draft }: StepProps) {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-black text-white">Sobre vocês</h1>
-        <p className="mt-1 text-sm text-white/50">
-          Os nomes aparecem em várias partes do site. As datas alimentam os
-          contadores.
+        <h1 className="text-2xl font-extrabold tracking-[-0.03em] text-brand-ink">Sobre vocês</h1>
+        <p className="mt-1 text-body text-brand-slate">
+          Os nomes aparecem em várias partes do site. As datas alimentam os contadores.
         </p>
       </header>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
           label="Seu nome"
-          hint="quem está dando o presente"
+          hint="Quem está dando o presente"
           value={config.couple.authorName}
           maxLength={40}
           placeholder="Léo"
@@ -44,13 +43,13 @@ export function StepNames({ draft }: StepProps) {
       <div className="grid gap-5 sm:grid-cols-3">
         <DateField
           label="Quando se conheceram"
-          hint="alimenta os “dias juntos”"
+          hint="Alimenta os “dias juntos”"
           value={config.dates.met}
           onChange={(met) => patch({ dates: { met } })}
         />
         <DateField
           label="Início do namoro"
-          hint="alimenta o contador da home"
+          hint="Alimenta o contador da home"
           value={config.dates.relationshipStart}
           onChange={(relationshipStart) =>
             patch({
@@ -64,17 +63,17 @@ export function StepNames({ draft }: StepProps) {
         />
         <DateField
           label="Data da comemoração"
-          hint="aparece na tela de abertura"
+          hint="Aparece na tela de abertura"
           value={config.dates.gift}
           onChange={(gift) => patch({ dates: { gift } })}
         />
       </div>
 
-      <div className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-        <h2 className="text-sm font-bold text-white">Tela de abertura</h2>
+      <div className="space-y-5 rounded-card bg-brand-mist p-5">
+        <h2 className="text-sm font-bold text-brand-ink">Tela de abertura</h2>
         <TextField
           label="Título"
-          hint="use *asteriscos* pra destacar uma palavra em verde · {author} e {recipient} viram os nomes"
+          hint="Use *asteriscos* pra destacar uma palavra em verde · {author} e {recipient} viram os nomes"
           value={config.anchor.headline}
           maxLength={120}
           onChange={(headline) => patch({ anchor: { headline } })}

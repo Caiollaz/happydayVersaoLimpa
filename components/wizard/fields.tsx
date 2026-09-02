@@ -1,30 +1,46 @@
 "use client";
 
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 
+import { DatePicker } from "@/components/brand/DatePicker";
+import { INPUT } from "@/components/brand/input";
 import { cn } from "@/lib/utils";
 
-const inputBase =
-  "w-full rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3 text-white " +
-  "placeholder:text-white/30 outline-none transition-colors " +
-  "focus:border-spotify-green focus:bg-white/[0.06]";
-
-function Label({ htmlFor, children, hint }: {
+interface LabelProps {
   htmlFor: string;
-  children: React.ReactNode;
-  hint?: string;
-}) {
+  children: ReactNode;
+}
+
+function Label({ htmlFor, children }: LabelProps) {
   return (
-    <div className="mb-2">
-      <label
-        htmlFor={htmlFor}
-        className="block text-sm font-semibold text-white"
-      >
-        {children}
-      </label>
-      {hint && <p className="mt-0.5 text-xs text-white/45">{hint}</p>}
+    <label htmlFor={htmlFor} className="mb-2 block text-sm font-semibold text-brand-ink">
+      {children}
+    </label>
+  );
+}
+
+interface HintProps {
+  hint?: string;
+  counter?: string;
+}
+
+function Hint({ hint, counter }: HintProps) {
+  if (!hint && !counter) return null;
+  return (
+    <div className="mt-1.5 flex justify-between gap-3 text-xs text-brand-slate">
+      {hint && <span>{hint}</span>}
+      {counter && <span className="ml-auto shrink-0">{counter}</span>}
     </div>
   );
+}
+
+interface TextFieldProps {
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  maxLength?: number;
 }
 
 export function TextField({
@@ -34,18 +50,11 @@ export function TextField({
   onChange,
   placeholder,
   maxLength,
-}: {
-  label: string;
-  hint?: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  maxLength?: number;
-}) {
+}: TextFieldProps) {
   const id = useId();
   return (
     <div>
-      <Label htmlFor={id} hint={hint}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <input
         id={id}
         type="text"
@@ -53,94 +62,72 @@ export function TextField({
         maxLength={maxLength}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className={inputBase}
+        className={INPUT}
       />
+      <Hint hint={hint} />
     </div>
   );
 }
 
-export function TextArea({
-  label,
-  hint,
-  value,
-  onChange,
-  rows = 10,
-  maxLength,
-}: {
+interface TextAreaProps {
   label: string;
   hint?: string;
   value: string;
   onChange: (value: string) => void;
   rows?: number;
   maxLength?: number;
-}) {
+}
+
+export function TextArea({ label, hint, value, onChange, rows = 10, maxLength }: TextAreaProps) {
   const id = useId();
   return (
     <div>
-      <Label htmlFor={id} hint={hint}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <textarea
         id={id}
         value={value}
         rows={rows}
         maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(inputBase, "resize-y leading-relaxed")}
+        className={cn(INPUT, "resize-y leading-relaxed")}
       />
-      {maxLength && (
-        <p className="mt-1 text-right text-xs text-white/35">
-          {value.length} / {maxLength}
-        </p>
-      )}
+      <Hint hint={hint} counter={maxLength ? `${value.length} / ${maxLength}` : undefined} />
     </div>
   );
 }
 
-export function DateField({
-  label,
-  hint,
-  value,
-  onChange,
-}: {
+interface DateFieldProps {
   label: string;
   hint?: string;
   value: string;
   onChange: (value: string) => void;
-}) {
+}
+
+export function DateField({ label, hint, value, onChange }: DateFieldProps) {
   const id = useId();
   return (
     <div>
-      <Label htmlFor={id} hint={hint}>{label}</Label>
-      <input
-        id={id}
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        // The native picker renders its icon in black on our dark field.
-        className={cn(inputBase, "[color-scheme:dark]")}
-      />
+      <Label htmlFor={id}>{label}</Label>
+      <DatePicker id={id} value={value} onChange={onChange} />
+      <Hint hint={hint} />
     </div>
   );
 }
 
-export function NumberField({
-  label,
-  hint,
-  value,
-  onChange,
-  min = 0,
-  max,
-}: {
+interface NumberFieldProps {
   label: string;
   hint?: string;
   value: number;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
-}) {
+}
+
+export function NumberField({ label, hint, value, onChange, min = 0, max }: NumberFieldProps) {
   const id = useId();
   return (
     <div>
-      <Label htmlFor={id} hint={hint}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <input
         id={id}
         type="number"
@@ -148,44 +135,41 @@ export function NumberField({
         min={min}
         max={max}
         onChange={(e) => {
-          const n = Number(e.target.value);
-          // An empty field parses as NaN, which would fail validation and
-          // block autosave while the user is mid-edit.
-          if (Number.isFinite(n)) onChange(n);
+          const parsed = Number(e.target.value);
+          if (!Number.isFinite(parsed)) return;
+          onChange(Math.min(max ?? Infinity, Math.max(min, parsed)));
         }}
-        className={inputBase}
+        className={INPUT}
       />
+      <Hint hint={hint} />
     </div>
   );
 }
 
-export function Toggle({
-  label,
-  hint,
-  checked,
-  onChange,
-}: {
+interface ToggleProps {
   label: string;
   hint?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
-}) {
+}
+
+export function Toggle({ label, hint, checked, onChange }: ToggleProps) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left transition-colors hover:bg-white/[0.06]"
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-brand-stroke bg-brand-paper px-4 py-3 text-left transition-colors hover:bg-brand-mist"
     >
       <span>
-        <span className="block text-sm font-semibold text-white">{label}</span>
-        {hint && <span className="block text-xs text-white/45">{hint}</span>}
+        <span className="block text-sm font-semibold text-brand-ink">{label}</span>
+        {hint && <span className="block text-xs text-brand-slate">{hint}</span>}
       </span>
       <span
         className={cn(
           "relative h-6 w-11 shrink-0 rounded-full transition-colors",
-          checked ? "bg-spotify-green" : "bg-white/20",
+          checked ? "bg-brand-ink" : "bg-brand-stroke",
         )}
       >
         <span

@@ -37,7 +37,14 @@ const schema = z.object({
   ADMIN_TOKEN: z.string().min(16).optional(),
 });
 
-const parsed = schema.safeParse(process.env);
+// An empty value counts as absent. Copying .env.example as-is (as the README
+// says to) leaves every optional key set to "", and "" fails .min(1) where
+// undefined would have passed.
+const raw = Object.fromEntries(
+  Object.entries(process.env).filter(([, v]) => v !== ""),
+);
+
+const parsed = schema.safeParse(raw);
 
 if (!parsed.success) {
   const issues = parsed.error.issues

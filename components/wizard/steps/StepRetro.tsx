@@ -1,8 +1,18 @@
 "use client";
 
+import type { ReactNode } from "react";
+
+import { ColorPicker } from "@/components/brand/ColorPicker";
+import { INPUT } from "@/components/brand/input";
+import { hues } from "@/components/brand/palette";
+import type { SiteConfig, SlideKey } from "@/lib/config/schema";
+import { cn } from "@/lib/utils";
+
 import type { StepProps } from "../Wizard";
 import { NumberField, TextArea, TextField, Toggle } from "../fields";
-import type { SiteConfig, SlideKey } from "@/lib/config/schema";
+
+const MAX_DESTINATIONS = 8;
+const NEW_DESTINATION_COLOR = hues.coral.mid;
 
 /**
  * Step 5 — the retrospective, slide by slide.
@@ -22,16 +32,15 @@ export function StepRetro({ draft }: StepProps) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-black text-white">A retrospectiva</h1>
-        <p className="mt-1 text-sm text-white/50">
-          Onze telas em estilo Wrapped. Desligue as que não combinam com a
-          história de vocês.
+        <h1 className="text-2xl font-extrabold tracking-[-0.03em] text-brand-ink">A retrospectiva</h1>
+        <p className="mt-1 text-body text-brand-slate">
+          Onze telas em estilo Wrapped. Desligue as que não combinam com a história de vocês.
         </p>
       </header>
 
       <Toggle
         label="Incluir a retrospectiva"
-        hint="disponível no plano Premium"
+        hint="Disponível no plano Premium"
         checked={config.retro.enabled}
         onChange={(enabled) => patch({ retro: { enabled } })}
       />
@@ -62,7 +71,7 @@ export function StepRetro({ draft }: StepProps) {
             slide={slides.whereStarted}
             onToggle={(enabled) => setSlide("whereStarted", { enabled })}
           >
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-brand-slate">
               A data vem de “quando se conheceram”, no primeiro passo.
             </p>
             <TextField
@@ -87,7 +96,7 @@ export function StepRetro({ draft }: StepProps) {
               />
               <TextField
                 label="Título"
-                hint="o filme, o show, o lugar"
+                hint="O filme, o show, o lugar"
                 value={slides.movie.title}
                 maxLength={40}
                 onChange={(title) => setSlide("movie", { title })}
@@ -140,7 +149,7 @@ export function StepRetro({ draft }: StepProps) {
           >
             <NumberField
               label="Quantas"
-              hint="dá pra estimar — ninguém confere"
+              hint="Dá pra estimar — ninguém confere"
               value={slides.messages.total}
               min={0}
               onChange={(total) => setSlide("messages", { total })}
@@ -205,7 +214,7 @@ export function StepRetro({ draft }: StepProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <TextField
                 label="Contagem"
-                hint="texto livre, tipo “412+”"
+                hint="Texto livre, tipo “412+”"
                 value={slides.photos.countLabel}
                 maxLength={12}
                 onChange={(countLabel) => setSlide("photos", { countLabel })}
@@ -242,7 +251,7 @@ export function StepRetro({ draft }: StepProps) {
             slide={slides.poster}
             onToggle={(enabled) => setSlide("poster", { enabled })}
           >
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-brand-slate">
               Os números vêm das telas anteriores. Só os rótulos são editáveis.
             </p>
           </SlideCard>
@@ -266,115 +275,113 @@ export function StepRetro({ draft }: StepProps) {
   );
 }
 
-function SlideCard({
-  title,
-  slide,
-  onToggle,
-  children,
-}: {
+interface SlideCardProps {
   title: string;
   slide: { enabled: boolean };
   onToggle: (enabled: boolean) => void;
-  children: React.ReactNode;
-}) {
+  children: ReactNode;
+}
+
+function SlideCard({ title, slide, onToggle, children }: SlideCardProps) {
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+    <section className="rounded-card bg-brand-mist p-5">
       <Toggle label={title} checked={slide.enabled} onChange={onToggle} />
       {slide.enabled && <div className="mt-4 space-y-4">{children}</div>}
     </section>
   );
 }
 
-function TripsEditor({
-  destinations,
-  onChange,
-}: {
-  destinations: { name: string; color: string }[];
-  onChange: (next: { name: string; color: string }[]) => void;
-}) {
+interface Destination {
+  name: string;
+  color: string;
+}
+
+interface TripsEditorProps {
+  destinations: Destination[];
+  onChange: (next: Destination[]) => void;
+}
+
+function TripsEditor({ destinations, onChange }: TripsEditorProps) {
   return (
     <div className="space-y-2">
-      {destinations.map((d, i) => (
+      {destinations.map((destination, i) => (
         <div key={i} className="flex items-center gap-2">
-          <input
-            type="color"
-            value={d.color}
-            aria-label={`Cor de ${d.name || "destino"}`}
-            onChange={(e) => {
+          <ColorPicker
+            label={`Cor de ${destination.name || `destino ${i + 1}`}`}
+            value={destination.color}
+            onChange={(color) => {
               const next = [...destinations];
-              next[i] = { ...next[i], color: e.target.value };
+              next[i] = { ...next[i], color };
               onChange(next);
             }}
-            className="h-9 w-9 shrink-0 cursor-pointer rounded border border-white/10 bg-transparent"
           />
           <input
             type="text"
-            value={d.name}
+            value={destination.name}
             maxLength={60}
             placeholder="Cidade, UF"
+            aria-label={`Destino ${i + 1}`}
             onChange={(e) => {
               const next = [...destinations];
               next[i] = { ...next[i], name: e.target.value };
               onChange(next);
             }}
-            className="flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-spotify-green"
+            className={cn(INPUT, "flex-1 rounded-xl px-3 py-2.5 text-sm")}
           />
           <button
             type="button"
             onClick={() => onChange(destinations.filter((_, j) => j !== i))}
-            className="rounded px-2 py-1 text-xs text-white/50 hover:text-red-400"
+            aria-label={`Remover ${destination.name || `destino ${i + 1}`}`}
+            className="shrink-0 px-2 py-1 text-xs font-semibold text-brand-slate hover:text-brand-danger"
           >
-            remover
+            Remover
           </button>
         </div>
       ))}
 
-      {destinations.length < 8 && (
+      {destinations.length < MAX_DESTINATIONS && (
         <button
           type="button"
-          onClick={() =>
-            onChange([...destinations, { name: "", color: "#FF7A5A" }])
-          }
-          className="text-xs font-semibold text-spotify-green hover:underline"
+          onClick={() => onChange([...destinations, { name: "", color: NEW_DESTINATION_COLOR }])}
+          className="text-xs font-semibold text-brand-ink hover:text-brand-pink-deep"
         >
-          + adicionar destino
+          + Adicionar destino
         </button>
       )}
     </div>
   );
 }
 
-/** Picks the hero photo from whatever the couple has already uploaded. */
-function FavPhotoPicker({
-  config,
-  current,
-  onPick,
-}: {
+interface FavPhotoPickerProps {
   config: SiteConfig;
   current: string;
   onPick: (src: string) => void;
-}) {
+}
+
+/** Picks the hero photo from whatever the couple has already uploaded. */
+function FavPhotoPicker({ config, current, onPick }: FavPhotoPickerProps) {
   const all = [
-    ...new Set([config.about.photo, ...config.galleries.flatMap((g) => g.photos)]),
+    ...new Set([config.about.photo, ...config.galleries.flatMap((gallery) => gallery.photos)]),
   ];
 
   return (
     <div>
-      <p className="mb-2 text-sm font-semibold text-white">Escolha a foto</p>
-      <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-        {all.map((src) => (
+      <p className="mb-2 text-sm font-semibold text-brand-ink">Escolha a foto</p>
+      <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-6">
+        {all.map((src, i) => (
           <button
             key={src}
             type="button"
             onClick={() => onPick(src)}
+            aria-label={`Foto ${i + 1}`}
             aria-pressed={current === src}
-            className={
+            className={cn(
+              "aspect-square overflow-hidden rounded-xl",
               current === src
-                ? "aspect-square overflow-hidden rounded-lg ring-2 ring-spotify-green"
-                : "aspect-square overflow-hidden rounded-lg opacity-60 hover:opacity-100"
-            }
+                ? "ring-2 ring-brand-ink ring-offset-2 ring-offset-brand-mist"
+                : "opacity-60 hover:opacity-100",
+            )}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt="" className="h-full w-full object-cover" />
           </button>
         ))}

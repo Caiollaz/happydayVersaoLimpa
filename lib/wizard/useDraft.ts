@@ -21,8 +21,8 @@ export interface Draft {
   save: SaveState;
   /** Applies a patch locally and schedules an autosave. */
   patch: (patch: ConfigPatch) => void;
-  /** Forces any pending write to land now. Resolves when it does. */
-  flush: () => Promise<void>;
+  /** Forces any pending write to land now. Resolves with the outcome. */
+  flush: () => Promise<SaveState>;
 }
 
 /**
@@ -47,10 +47,12 @@ export function useDraft(
 
   const pending = useRef<ConfigPatch>({});
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inFlight = useRef<Promise<void> | null>(null);
+  const inFlight = useRef<Promise<SaveState> | null>(null);
 
-  const send = useCallback(async () => {
-    if (Object.keys(pending.current).length === 0) return;
+  const send = useCallback(async (): Promise<SaveState> => {
+    if (Object.keys(pending.current).length === 0) {
+      return { status: "saved", at: Date.now() };
+    }
 
     const payload = pending.current;
     pending.current = {};
@@ -71,17 +73,22 @@ export function useDraft(
         // Put the rejected fields back so the next save retries them
         // instead of silently dropping the user's work.
         pending.current = { ...payload, ...pending.current };
-        setSave({
+        const failed: SaveState = {
           status: "error",
           message: body.issues?.[0]?.message ?? body.error ?? "não consegui salvar",
-        });
-        return;
+        };
+        setSave(failed);
+        return failed;
       }
 
-      setSave({ status: "saved", at: Date.now() });
+      const saved: SaveState = { status: "saved", at: Date.now() };
+      setSave(saved);
+      return saved;
     } catch {
       pending.current = { ...payload, ...pending.current };
-      setSave({ status: "error", message: "sem conexão — vou tentar de novo" });
+      const offline: SaveState = { status: "error", message: "sem conexão — vou tentar de novo" };
+      setSave(offline);
+      return offline;
     }
   }, [siteId, token]);
 
@@ -104,7 +111,7 @@ export function useDraft(
       timer.current = null;
     }
     await inFlight.current;
-    await send();
+    return send();
   }, [send]);
 
   // Last-ditch save when the tab closes mid-edit.

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { brandViewport } from "@/components/brand/viewport";
 import { Wizard } from "@/components/wizard/Wizard";
 import { findSiteByEditToken } from "@/lib/sites";
 
@@ -14,26 +15,22 @@ import { findSiteByEditToken } from "@/lib/sites";
  */
 export const dynamic = "force-dynamic";
 
+export const viewport = brandViewport;
+
 export const metadata: Metadata = {
-  title: "Montando seu site",
+  title: "Montando seu presente",
   robots: { index: false, follow: false },
 };
 
-export default async function EditarPage({
-  params,
-}: {
+interface EditarPageProps {
   params: Promise<{ token: string }>;
-}) {
+}
+
+export default async function EditarPage({ params }: EditarPageProps) {
   const { token } = await params;
   const loaded = findSiteByEditToken(token);
 
   if (!loaded) notFound();
 
-  return (
-    <Wizard
-      siteId={loaded.site.id}
-      token={token}
-      initialConfig={loaded.config}
-    />
-  );
+  return <Wizard siteId={loaded.site.id} token={token} initialConfig={loaded.config} />;
 }

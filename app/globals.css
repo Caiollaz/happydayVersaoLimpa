@@ -60,3 +60,21 @@
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
 }
+
+body:has(.brand-surface) {
+  background-color: theme(colors.brand.ground);
+  color: theme(colors.brand.ink);
+  overflow-x: clip;
+}
+
+html:has(.brand-surface) {
+  scrollbar-color: theme(colors.brand.ink / 28%) transparent;
+}
+html:has(.brand-surface)::-webkit-scrollbar-thumb,
+html:has(.brand-surface) ::-webkit-scrollbar-thumb {
+  background: theme(colors.brand.ink / 22%);
+}
+html:has(.brand-surface)::-webkit-scrollbar-thumb:hover,
+html:has(.brand-surface) ::-webkit-scrollbar-thumb:hover {
+  background: theme(colors.brand.ink / 38%);
+}

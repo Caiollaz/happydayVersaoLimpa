@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import type { ReactNode } from "react";
 import { eq } from "drizzle-orm";
 
-import { db, orders, sites } from "@/lib/db";
+import { Pill } from "@/components/brand/Pill";
+import { Figure, type FigureName } from "@/components/brand/scenes";
+import { Shell } from "@/components/brand/Shell";
+import { brandViewport } from "@/components/brand/viewport";
 import { parseSiteConfig } from "@/lib/config/schema";
+import { db, orders, sites } from "@/lib/db";
 
 /**
  * Where Mercado Pago sends the buyer back to.
@@ -17,102 +21,102 @@ import { parseSiteConfig } from "@/lib/config/schema";
  */
 export const dynamic = "force-dynamic";
 
+export const viewport = brandViewport;
+
 export const metadata: Metadata = {
   title: "Pagamento",
   robots: { index: false, follow: false },
 };
 
-export default async function RetornoPage({
-  searchParams,
-}: {
+interface RetornoPageProps {
   searchParams: Promise<{ order?: string }>;
-}) {
+}
+
+export default async function RetornoPage({ searchParams }: RetornoPageProps) {
   const { order: orderId } = await searchParams;
 
   const order = orderId
     ? db.select().from(orders).where(eq(orders.id, orderId)).get()
     : undefined;
 
-  if (!order) return <Shell title="Pedido não encontrado" />;
+  if (!order) {
+    return (
+      <Outcome title="Pedido não encontrado">
+        <p>Não achamos esse pedido. Se você acabou de pagar, confira o link que chegou no seu e-mail.</p>
+      </Outcome>
+    );
+  }
 
   const site = db.select().from(sites).where(eq(sites.id, order.siteId)).get();
 
   if (order.status === "APPROVED" && site?.slug) {
     const config = parseSiteConfig(site.config);
-    return (
-      <Shell title="Está no ar 💚">
-        <p className="text-white/60">
-          O site para {config.couple.recipientName} já pode ser compartilhado.
-        </p>
 
-        <div className="mt-6 space-y-3">
-          <Link
-            href={`/p/${site.slug}`}
-            className="block rounded-full bg-spotify-green px-6 py-3 text-center font-bold text-black"
-          >
+    return (
+      <Outcome figure="giftbox" title="Está no ar.">
+        <p>O presente para {config.couple.recipientName} já pode ser compartilhado.</p>
+
+        <div className="mt-8 flex flex-col gap-3">
+          <Pill href={`/p/${site.slug}`} tone="ink">
             Abrir o site
-          </Link>
-          <Link
-            href={`/editar/${site.editToken}`}
-            className="block rounded-full border border-white/15 px-6 py-3 text-center font-semibold text-white/80"
-          >
+          </Pill>
+          <Pill href={`/editar/${site.editToken}`} tone="ghost">
             Continuar editando
-          </Link>
+          </Pill>
         </div>
 
-        <p className="mt-6 text-xs text-white/40">
-          Enviamos os dois links pro seu e-mail. Guarde o de edição — é a única
-          forma de mexer no site.
+        <p className="mt-6 text-caption text-brand-slate/80">
+          Enviamos os dois links pro seu e-mail. Guarde o de edição — é a única forma de mexer no
+          site.
         </p>
-      </Shell>
+      </Outcome>
     );
   }
 
   if (order.status === "PENDING") {
     return (
-      <Shell title="Aguardando confirmação">
-        <p className="text-white/60">
-          Se você pagou com Pix, isso costuma levar alguns segundos. Assim que
-          o pagamento cair, o site publica sozinho e o link chega no seu
-          e-mail.
+      <Outcome figure="envelope" title="Aguardando confirmação">
+        <p>
+          Se você pagou com Pix, isso costuma levar alguns segundos. Assim que o pagamento cair, o
+          site publica sozinho e o link chega no seu e-mail.
         </p>
-        <p className="mt-6 text-xs text-white/40">
+        <p className="mt-6 text-caption text-brand-slate/80">
           Pode fechar esta página — não precisa esperar aqui.
         </p>
-      </Shell>
+      </Outcome>
     );
   }
 
   return (
-    <Shell title="O pagamento não foi concluído">
-      <p className="text-white/60">
-        Nada foi cobrado. Seu rascunho continua salvo — é só tentar de novo.
-      </p>
+    <Outcome title="O pagamento não foi concluído">
+      <p>Nada foi cobrado. Seu rascunho continua salvo — é só tentar de novo.</p>
       {site && (
-        <Link
-          href={`/editar/${site.editToken}`}
-          className="mt-6 block rounded-full bg-spotify-green px-6 py-3 text-center font-bold text-black"
-        >
+        <Pill href={`/editar/${site.editToken}`} tone="ink" className="mt-8 w-full">
           Voltar pro meu site
-        </Link>
+        </Pill>
       )}
-    </Shell>
+    </Outcome>
   );
 }
 
-function Shell({
-  title,
-  children,
-}: {
+interface OutcomeProps {
   title: string;
-  children?: React.ReactNode;
-}) {
+  figure?: FigureName;
+  children: ReactNode;
+}
+
+function Outcome({ title, figure, children }: OutcomeProps) {
   return (
-    <main className="grid min-h-[100dvh] place-items-center bg-spotify-black px-6">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-black text-white">{title}</h1>
-        <div className="mt-3">{children}</div>
-      </div>
-    </main>
+    <Shell>
+      <main className="grid min-h-[70dvh] place-items-center px-5 py-16 sm:px-8">
+        <div className="w-full max-w-md rounded-panel bg-brand-mist p-8 text-center sm:p-10">
+          {figure && <Figure name={figure} className="mx-auto h-28 w-28" />}
+          <h1 className="mt-5 text-[2rem] font-extrabold leading-[1.12] tracking-[-0.035em]">
+            {title}
+          </h1>
+          <div className="mt-4 text-body leading-relaxed text-brand-slate">{children}</div>
+        </div>
+      </main>
+    </Shell>
   );
 }
