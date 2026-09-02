@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { LegalPage } from "@/components/LegalPage";
+import { LegalPage } from "@/components/brand/LegalPage";
+import { brandViewport } from "@/components/brand/viewport";
+
+export const viewport = brandViewport;
 
 export const metadata: Metadata = {
   title: "Privacidade — Happyday",
@@ -119,7 +122,7 @@ export default function PrivacidadePage() {
       </section>
 
       <section>
-        <p className="text-sm text-white/45">
+        <p className="text-sm text-brand-slate/80">
           Veja também os <Link href="/termos">Termos de uso</Link>.
         </p>
       </section>

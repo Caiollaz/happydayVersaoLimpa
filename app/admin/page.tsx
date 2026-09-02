@@ -2,10 +2,16 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 
+import { INPUT } from "@/components/brand/input";
+import { Logo } from "@/components/brand/Logo";
+import { PillButton } from "@/components/brand/Pill";
+import { Shell } from "@/components/brand/Shell";
+import { brandViewport } from "@/components/brand/viewport";
 import { isAdmin } from "@/lib/admin";
+import { parseSiteConfig } from "@/lib/config/schema";
 import { db, orders, sites } from "@/lib/db";
 import { formatPrice } from "@/lib/plans";
-import { parseSiteConfig } from "@/lib/config/schema";
+import { cn } from "@/lib/utils";
 
 /**
  * Operator dashboard.
@@ -17,6 +23,8 @@ import { parseSiteConfig } from "@/lib/config/schema";
  * gathering data we don't need on people building a private gift.
  */
 export const dynamic = "force-dynamic";
+
+export const viewport = brandViewport;
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -51,41 +59,40 @@ export default async function AdminPage() {
   const weekAgo = nowSec - 7 * 86_400;
   const count = (rows: { n: number } | undefined) => rows?.n ?? 0;
 
-  const totalSites = count(
-    db.select({ n: sql<number>`count(*)` }).from(sites).get(),
-  );
+  const totalSites = count(db.select({ n: sql<number>`count(*)` }).from(sites).get());
   const drafts = count(
-    db.select({ n: sql<number>`count(*)` }).from(sites)
-      .where(eq(sites.status, "DRAFT")).get(),
+    db.select({ n: sql<number>`count(*)` }).from(sites).where(eq(sites.status, "DRAFT")).get(),
   );
   const published = count(
-    db.select({ n: sql<number>`count(*)` }).from(sites)
-      .where(eq(sites.status, "PUBLISHED")).get(),
+    db
+      .select({ n: sql<number>`count(*)` })
+      .from(sites)
+      .where(eq(sites.status, "PUBLISHED"))
+      .get(),
   );
   const draftsWeek = count(
-    db.select({ n: sql<number>`count(*)` }).from(sites)
-      .where(gte(sites.createdAt, weekAgo)).get(),
+    db.select({ n: sql<number>`count(*)` }).from(sites).where(gte(sites.createdAt, weekAgo)).get(),
   );
   const revenue = count(
-    db.select({ n: sql<number>`coalesce(sum(${orders.amountCents}), 0)` })
-      .from(orders).where(eq(orders.status, "APPROVED")).get(),
+    db
+      .select({ n: sql<number>`coalesce(sum(${orders.amountCents}), 0)` })
+      .from(orders)
+      .where(eq(orders.status, "APPROVED"))
+      .get(),
   );
   const expiringSoon = count(
-    db.select({ n: sql<number>`count(*)` }).from(sites)
-      .where(and(
-        eq(sites.status, "PUBLISHED"),
-        sql`${sites.expiresAt} < ${nowSec + 30 * 86_400}`,
-      )).get(),
+    db
+      .select({ n: sql<number>`count(*)` })
+      .from(sites)
+      .where(
+        and(eq(sites.status, "PUBLISHED"), sql`${sites.expiresAt} < ${nowSec + 30 * 86_400}`),
+      )
+      .get(),
   );
 
   const conversion = totalSites > 0 ? (published / totalSites) * 100 : 0;
 
-  const recentOrders = db
-    .select()
-    .from(orders)
-    .orderBy(desc(orders.createdAt))
-    .limit(15)
-    .all();
+  const recentOrders = db.select().from(orders).orderBy(desc(orders.createdAt)).limit(15).all();
 
   const recentSites = db
     .select()
@@ -96,153 +103,138 @@ export default async function AdminPage() {
     .all();
 
   return (
-    <main className="min-h-[100dvh] bg-spotify-black px-6 py-10 text-white">
-      <div className="mx-auto max-w-5xl space-y-10">
-        <h1 className="text-2xl font-black">Painel</h1>
+    <Shell nav={false} footer={null}>
+      <main className="px-5 pb-16 pt-6 sm:px-8">
+        <div className="mx-auto max-w-5xl space-y-10">
+          <header className="flex items-center justify-between gap-4">
+            <Logo />
+            <h1 className="text-sm font-semibold text-brand-slate">Painel</h1>
+          </header>
 
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <Stat label="Receita" value={formatPrice(revenue)} highlight />
-          <Stat label="Publicados" value={String(published)} />
-          <Stat label="Rascunhos" value={String(drafts)} />
-          <Stat label="Novos (7d)" value={String(draftsWeek)} />
-          <Stat label="Conversão" value={`${conversion.toFixed(1)}%`} />
-          <Stat label="Vencem em 30d" value={String(expiringSoon)} />
-        </section>
+          <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <Stat label="Receita" value={formatPrice(revenue)} highlight />
+            <Stat label="Publicados" value={String(published)} />
+            <Stat label="Rascunhos" value={String(drafts)} />
+            <Stat label="Novos (7d)" value={String(draftsWeek)} />
+            <Stat label="Conversão" value={`${conversion.toFixed(1)}%`} />
+            <Stat label="Vencem em 30d" value={String(expiringSoon)} />
+          </section>
 
-        <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-white/50">
-            Pedidos recentes
-          </h2>
-          <Table
-            head={["Data", "Plano", "Valor", "Status", "Método"]}
-            rows={recentOrders.map((o) => [
-              new Date(o.createdAt * 1000).toLocaleString("pt-BR"),
-              o.plan,
-              formatPrice(o.amountCents),
-              o.status,
-              o.mpPaymentMethod ?? "—",
-            ])}
-            empty="Nenhum pedido ainda."
-          />
-        </section>
+          <section>
+            <h2 className="mb-3 text-sm font-bold">Pedidos recentes</h2>
+            <Table
+              head={["Data", "Plano", "Valor", "Status", "Método"]}
+              rows={recentOrders.map((order) => [
+                new Date(order.createdAt * 1000).toLocaleString("pt-BR"),
+                order.plan,
+                formatPrice(order.amountCents),
+                order.status,
+                order.mpPaymentMethod ?? "—",
+              ])}
+              empty="Nenhum pedido ainda."
+            />
+          </section>
 
-        <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-white/50">
-            Sites no ar
-          </h2>
-          <Table
-            head={["Casal", "Link", "Publicado", "Expira"]}
-            rows={recentSites.map((s) => {
-              const c = parseSiteConfig(s.config);
-              return [
-                `${c.couple.authorName} & ${c.couple.recipientName}`,
-                `/p/${s.slug}`,
-                s.publishedAt
-                  ? new Date(s.publishedAt * 1000).toLocaleDateString("pt-BR")
-                  : "—",
-                s.expiresAt
-                  ? new Date(s.expiresAt * 1000).toLocaleDateString("pt-BR")
-                  : "—",
-              ];
-            })}
-            empty="Nenhum site publicado ainda."
-          />
-        </section>
+          <section>
+            <h2 className="mb-3 text-sm font-bold">Sites no ar</h2>
+            <Table
+              head={["Casal", "Link", "Publicado", "Expira"]}
+              rows={recentSites.map((site) => {
+                const config = parseSiteConfig(site.config);
+                return [
+                  `${config.couple.authorName} & ${config.couple.recipientName}`,
+                  `/p/${site.slug}`,
+                  site.publishedAt
+                    ? new Date(site.publishedAt * 1000).toLocaleDateString("pt-BR")
+                    : "—",
+                  site.expiresAt
+                    ? new Date(site.expiresAt * 1000).toLocaleDateString("pt-BR")
+                    : "—",
+                ];
+              })}
+              empty="Nenhum site publicado ainda."
+            />
+          </section>
 
-        <p className="text-xs text-white/35">
-          Números derivados das tabelas do próprio produto. Sem pixel, sem
-          cookie de rastreio, sem serviço de terceiros.
-        </p>
-      </div>
-    </main>
+          <p className="text-caption text-brand-slate/80">
+            Números derivados das tabelas do próprio produto. Sem pixel, sem cookie de rastreio,
+            sem serviço de terceiros.
+          </p>
+        </div>
+      </main>
+    </Shell>
   );
 }
 
 function LoginForm() {
   return (
-    <main className="grid min-h-[100dvh] place-items-center bg-spotify-black px-6">
-      <form action={login} className="w-full max-w-xs">
-        <label
-          htmlFor="token"
-          className="mb-2 block text-sm font-semibold text-white"
-        >
-          Token de admin
-        </label>
-        <input
-          id="token"
-          name="token"
-          type="password"
-          autoComplete="off"
-          className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-spotify-green"
-        />
-        <button
-          type="submit"
-          className="mt-3 w-full rounded-full bg-spotify-green py-3 font-bold text-black"
-        >
-          Entrar
-        </button>
-      </form>
-    </main>
+    <Shell nav={false} footer={null}>
+      <main className="grid min-h-[70dvh] place-items-center px-5 py-16 sm:px-8">
+        <form action={login} className="w-full max-w-sm rounded-panel bg-brand-mist p-8 sm:p-10">
+          <Logo />
+          <h1 className="mt-8 text-lg font-extrabold tracking-[-0.02em]">Entrar no painel</h1>
+          <label htmlFor="token" className="mt-6 block text-sm font-semibold">
+            Token de admin
+          </label>
+          <input
+            id="token"
+            name="token"
+            type="password"
+            autoComplete="off"
+            className={cn("mt-2", INPUT)}
+          />
+          <PillButton type="submit" tone="ink" className="mt-4 w-full">
+            Entrar
+          </PillButton>
+        </form>
+      </main>
+    </Shell>
   );
 }
 
-function Stat({
-  label,
-  value,
-  highlight,
-}: {
+interface StatProps {
   label: string;
   value: string;
   highlight?: boolean;
-}) {
+}
+
+function Stat({ label, value, highlight = false }: StatProps) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-white/45">
-        {label}
-      </p>
-      <p
-        className={
-          highlight
-            ? "mt-1 text-xl font-black text-spotify-green"
-            : "mt-1 text-xl font-black text-white"
-        }
-      >
-        {value}
-      </p>
+    <div className={cn("rounded-card p-4", highlight ? "bg-brand-lav" : "bg-brand-mist")}>
+      <p className="text-[11px] font-semibold text-brand-slate">{label}</p>
+      <p className="mt-1 text-xl font-extrabold tracking-[-0.02em]">{value}</p>
     </div>
   );
 }
 
-function Table({
-  head,
-  rows,
-  empty,
-}: {
+interface TableProps {
   head: string[];
   rows: string[][];
   empty: string;
-}) {
+}
+
+function Table({ head, rows, empty }: TableProps) {
   if (rows.length === 0) {
-    return <p className="text-sm text-white/40">{empty}</p>;
+    return <p className="text-sm text-brand-slate">{empty}</p>;
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-white/10">
+    <div className="overflow-x-auto rounded-card border border-brand-ground">
       <table className="w-full text-sm">
-        <thead className="bg-white/[0.03] text-left text-xs uppercase tracking-wider text-white/45">
+        <thead className="bg-brand-mist text-left text-xs text-brand-slate">
           <tr>
-            {head.map((h) => (
-              <th key={h} className="px-4 py-2.5 font-semibold">
-                {h}
+            {head.map((column) => (
+              <th key={column} className="px-4 py-2.5 font-semibold">
+                {column}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.06]">
+        <tbody className="divide-y divide-brand-ground">
           {rows.map((row, i) => (
             <tr key={i}>
               {row.map((cell, j) => (
-                <td key={j} className="whitespace-nowrap px-4 py-2.5 text-white/70">
+                <td key={j} className="whitespace-nowrap px-4 py-2.5 text-brand-ink">
                   {cell}
                 </td>
               ))}

@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { LegalPage } from "@/components/LegalPage";
+import { LegalPage } from "@/components/brand/LegalPage";
+import { brandViewport } from "@/components/brand/viewport";
 import { PLANS, formatPrice } from "@/lib/plans";
+
+export const viewport = brandViewport;
 
 export const metadata: Metadata = {
   title: "Termos de uso — Happyday",
@@ -104,7 +107,7 @@ export default function TermosPage() {
       </section>
 
       <section>
-        <p className="text-sm text-white/45">
+        <p className="text-sm text-brand-slate/80">
           Veja também a{" "}
           <Link href="/privacidade">Política de Privacidade</Link>.
         </p>
