@@ -143,7 +143,7 @@ export function SceneSend({ className }: SceneProps) {
       <path
         d="M348 88 l18 -10 M350 122 l19 6 M330 62 l7 -18"
         stroke={ink}
-        strokeWidth={6}
+        strokeWidth={4}
         strokeLinecap="round"
       />
     </svg>

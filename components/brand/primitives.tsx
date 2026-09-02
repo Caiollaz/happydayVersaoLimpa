@@ -1,6 +1,7 @@
 import { hues, ink } from "./palette";
 
-const STROKE = 5;
+const STROKE = 3;
+const STROKE_THIN = 2;
 
 const HEART =
   "M50 86 C12 58 6 30 24 16 C38 5 50 14 50 26 C50 14 62 5 76 16 C94 30 88 58 50 86 Z";
@@ -30,7 +31,7 @@ export function Isle({ x = 0, y = 0, s = 1, hole = false, grass = true }: IslePr
         d="M52 126 C62 100 68 76 70 58 M166 136 C160 108 156 82 154 60"
         fill="none"
         stroke={ink}
-        strokeWidth={4}
+        strokeWidth={STROKE_THIN}
         strokeLinecap="round"
       />
       <ellipse
@@ -49,7 +50,7 @@ export function Isle({ x = 0, y = 0, s = 1, hole = false, grass = true }: IslePr
           d="M30 15 l-6 -11 M42 12 l0 -13 M54 9 l6 -11 M186 9 l-6 -11 M198 12 l0 -13 M210 15 l6 -11"
           fill="none"
           stroke={ink}
-          strokeWidth={4}
+          strokeWidth={STROKE_THIN}
           strokeLinecap="round"
         />
       )}
@@ -241,7 +242,7 @@ export function QrCard({ x = 0, y = 0, s = 1 }: Placed) {
       />
       {QR_FINDERS.map(([fx, fy]) => (
         <g key={`${fx}-${fy}`}>
-          <rect x={fx} y={fy} width="24" height="24" rx="6" fill="none" stroke={ink} strokeWidth={5} />
+          <rect x={fx} y={fy} width="24" height="24" rx="6" fill="none" stroke={ink} strokeWidth={STROKE} />
           <rect x={fx + 8} y={fy + 8} width="8" height="8" rx="2" fill={ink} />
         </g>
       ))}
@@ -263,7 +264,7 @@ export function Record({ x = 0, y = 0, s = 1 }: Placed) {
         strokeWidth={6}
         strokeLinecap="round"
       />
-      <circle cx="50" cy="50" r="15" fill={hues.pink.light} strokeWidth={4} />
+      <circle cx="50" cy="50" r="15" fill={hues.pink.light} strokeWidth={STROKE_THIN} />
       <circle cx="50" cy="50" r="4" fill={ink} strokeWidth={0} />
     </g>
   );
@@ -302,7 +303,7 @@ export function Balloon({ x = 0, y = 0, s = 1 }: Placed) {
       <path
         d="M45 96 C38 108 52 116 46 128"
         fill="none"
-        strokeWidth={4}
+        strokeWidth={STROKE_THIN}
         strokeLinecap="round"
       />
       <ellipse cx="45" cy="46" rx="34" ry="42" fill={hues.pink.light} strokeWidth={STROKE} />
@@ -331,7 +332,7 @@ export function Cake({ x = 0, y = 0, s = 1 }: Placed) {
         strokeWidth={STROKE}
       />
       <rect x="55" y="20" width="10" height="26" rx="3" fill={hues.sun.light} strokeWidth={STROKE} />
-      <path d="M60 2 C66 8 68 16 60 20 C52 16 54 8 60 2 Z" fill={hues.coral.mid} strokeWidth={4} />
+      <path d="M60 2 C66 8 68 16 60 20 C52 16 54 8 60 2 Z" fill={hues.coral.mid} strokeWidth={STROKE_THIN} />
     </g>
   );
 }
@@ -342,8 +343,8 @@ export function Candle({ x = 0, y = 0, s = 1 }: Placed) {
       <ellipse cx="40" cy="110" rx="30" ry="8" fill={hues.blue.light} strokeWidth={STROKE} />
       <rect x="22" y="42" width="36" height="68" rx="6" fill={hues.sun.pale} strokeWidth={STROKE} />
       <ellipse cx="40" cy="42" rx="18" ry="6" fill={hues.sun.light} strokeWidth={STROKE} />
-      <path d="M40 36 L40 28" fill="none" strokeWidth={4} strokeLinecap="round" />
-      <path d="M40 4 C50 14 52 24 40 30 C28 24 30 14 40 4 Z" fill={hues.coral.mid} strokeWidth={4} />
+      <path d="M40 36 L40 28" fill="none" strokeWidth={STROKE_THIN} strokeLinecap="round" />
+      <path d="M40 4 C50 14 52 24 40 30 C28 24 30 14 40 4 Z" fill={hues.coral.mid} strokeWidth={STROKE_THIN} />
       <path d="M40 16 C44 20 44 25 40 28 C36 25 36 20 40 16 Z" fill={hues.sun.light} strokeWidth={0} />
     </g>
   );
@@ -371,9 +372,9 @@ export function Ring({ x = 0, y = 0, s = 1 }: Placed) {
       <circle cx="50" cy="72" r="27" fill="none" stroke={hues.sun.light} strokeWidth={10} />
       <circle cx="50" cy="72" r="32" fill="none" strokeWidth={STROKE} />
       <circle cx="50" cy="72" r="22" fill="none" strokeWidth={STROKE} />
-      <path d="M40 42 L60 42 L56 34 L44 34 Z" fill={hues.sun.light} strokeWidth={4} />
+      <path d="M40 42 L60 42 L56 34 L44 34 Z" fill={hues.sun.light} strokeWidth={STROKE_THIN} />
       <path d="M50 4 L70 22 L50 36 L30 22 Z" fill={hues.blue.light} strokeWidth={STROKE} />
-      <path d="M30 22 L70 22 M40 22 L50 4 L60 22 M40 22 L50 36 L60 22" fill="none" strokeWidth={3} />
+      <path d="M30 22 L70 22 M40 22 L50 4 L60 22 M40 22 L50 36 L60 22" fill="none" strokeWidth={STROKE_THIN} />
     </g>
   );
 }
