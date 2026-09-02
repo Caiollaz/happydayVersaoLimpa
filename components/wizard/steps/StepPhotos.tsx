@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Trash2 } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 import type { StepProps } from "../Wizard";
 import { TextField } from "../fields";
-import { cn } from "@/lib/utils";
 
 /**
  * Step 2 — the photo albums.
@@ -20,17 +21,16 @@ export function StepPhotos({ draft, token }: StepProps) {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-black text-white">As fotos</h1>
-        <p className="mt-1 text-sm text-white/50">
-          As fotos de exemplo já estão aqui — troque pelas suas. A localização
-          e os dados da câmera são removidos de toda foto enviada.
+        <h1 className="text-2xl font-extrabold tracking-[-0.03em] text-brand-ink">As fotos</h1>
+        <p className="mt-1 text-body text-brand-slate">
+          As fotos de exemplo já estão aqui — troque pelas suas. A localização e os dados da câmera
+          são removidos de toda foto enviada.
         </p>
       </header>
 
       {config.galleries.map((gallery, gi) => (
         <GalleryEditor
           key={gallery.id}
-          index={gi}
           gallery={gallery}
           token={token}
           onChange={(next) => {
@@ -44,21 +44,30 @@ export function StepPhotos({ draft, token }: StepProps) {
   );
 }
 
-type Gallery = { id: string; title: string; thumbnail: string; photos: string[] };
+interface Gallery {
+  id: string;
+  title: string;
+  thumbnail: string;
+  photos: string[];
+}
 
-function GalleryEditor({
-  gallery,
-  token,
-  onChange,
-}: {
-  index: number;
+interface GalleryEditorProps {
   gallery: Gallery;
   token: string;
   onChange: (next: Partial<Gallery>) => void;
-}) {
+}
+
+const TOOL_BUTTON = "grid h-7 w-7 place-items-center rounded-md text-white/80 hover:text-white";
+
+function GalleryEditor({ gallery, token, onChange }: GalleryEditorProps) {
   const fileInput = useRef<HTMLInputElement>(null);
+  const latestPhotos = useRef(gallery.photos);
   const [busy, setBusy] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    latestPhotos.current = gallery.photos;
+  }, [gallery.photos]);
 
   const upload = async (files: FileList) => {
     setError(null);
@@ -88,8 +97,10 @@ function GalleryEditor({
 
     if (added.length) {
       // The gallery is replaced wholesale, matching the server's rule that
-      // arrays replace rather than merge.
-      onChange({ photos: [...gallery.photos, ...added] });
+      // arrays replace rather than merge. Read the latest photos, not the
+      // ones captured when the upload started — the user may have reordered
+      // or removed some while the files were in flight.
+      onChange({ photos: [...latestPhotos.current, ...added] });
     }
   };
 
@@ -115,7 +126,7 @@ function GalleryEditor({
   };
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+    <section className="rounded-card bg-brand-mist p-5">
       <TextField
         label="Nome do álbum"
         value={gallery.title}
@@ -123,40 +134,33 @@ function GalleryEditor({
         onChange={(title) => onChange({ title })}
       />
 
-      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
+      <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-5">
         {gallery.photos.map((src, i) => (
           <figure
             key={`${src}-${i}`}
-            className="group relative aspect-square overflow-hidden rounded-lg bg-white/5"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt=""
-              className="h-full w-full object-cover"
-              draggable={false}
-            />
-
-            {gallery.thumbnail === src && (
-              <span className="absolute left-1 top-1 rounded bg-spotify-green px-1.5 py-0.5 text-[9px] font-bold text-black">
-                capa
-              </span>
+            className={cn(
+              "group relative aspect-square overflow-hidden rounded-xl bg-brand-lav",
+              gallery.thumbnail === src &&
+                "ring-2 ring-brand-ink ring-offset-2 ring-offset-brand-mist",
             )}
+          >
+            <img src={src} alt="" className="h-full w-full object-cover" draggable={false} />
 
-            <div className="absolute inset-x-0 bottom-0 flex justify-between gap-0.5 bg-black/70 p-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div className="absolute inset-x-0 bottom-0 flex justify-between gap-0.5 bg-brand-ink/75 p-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
               <button
                 type="button"
                 onClick={() => move(i, i - 1)}
                 aria-label="Mover para trás"
-                className="rounded p-1 text-white/80 hover:text-white"
+                className={TOOL_BUTTON}
               >
-                <ArrowLeft className="h-3 w-3" />
+                <ArrowLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={() => onChange({ thumbnail: src })}
                 aria-label="Usar como capa"
-                className="rounded px-1 text-[9px] font-bold text-white/80 hover:text-white"
+                aria-pressed={gallery.thumbnail === src}
+                className={cn(TOOL_BUTTON, "w-auto px-1.5 text-[10px] font-bold")}
               >
                 capa
               </button>
@@ -164,17 +168,17 @@ function GalleryEditor({
                 type="button"
                 onClick={() => remove(i)}
                 aria-label="Remover foto"
-                className="rounded p-1 text-white/80 hover:text-red-400"
+                className={cn(TOOL_BUTTON, "hover:text-brand-coral-light")}
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={() => move(i, i + 1)}
                 aria-label="Mover para frente"
-                className="rounded p-1 text-white/80 hover:text-white"
+                className={TOOL_BUTTON}
               >
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </figure>
@@ -183,10 +187,9 @@ function GalleryEditor({
         <button
           type="button"
           onClick={() => fileInput.current?.click()}
-          className={cn(
-            "grid aspect-square place-items-center rounded-lg border border-dashed border-white/20 text-white/40",
-            "transition-colors hover:border-spotify-green hover:text-spotify-green",
-          )}
+          aria-label="Adicionar fotos"
+          aria-busy={busy > 0}
+          className="grid aspect-square place-items-center rounded-xl border-2 border-dashed border-brand-stroke text-brand-slate transition-colors hover:border-brand-ink hover:text-brand-ink"
         >
           {busy > 0 ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -209,7 +212,11 @@ function GalleryEditor({
         }}
       />
 
-      {error && <p className="mt-3 text-xs text-amber-400">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-3 text-xs text-brand-danger">
+          {error}
+        </p>
+      )}
     </section>
   );
 }

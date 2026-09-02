@@ -1,17 +1,9 @@
 "use client";
 
-import type { StepProps } from "../Wizard";
-import { TextField } from "../fields";
 import { cn } from "@/lib/utils";
 
-/**
- * Step 3 — the soundtrack.
- *
- * Two tracks: one plays on the site, one during the retrospective. Both come
- * from the built-in catalog. Uploading your own file is a Premium feature
- * that is not wired yet — the field is deliberately absent rather than
- * disabled, so nothing here promises something that doesn't work.
- */
+import type { StepProps } from "../Wizard";
+import { TextField } from "../fields";
 
 /**
  * The track catalog.
@@ -33,20 +25,30 @@ const CATALOG = [
   },
 ] as const;
 
+type Track = (typeof CATALOG)[number];
+
+/**
+ * Step 3 — the soundtrack.
+ *
+ * Two tracks: one plays on the site, one during the retrospective. Both come
+ * from the built-in catalog. Uploading your own file is a Premium feature
+ * that is not wired yet — the field is deliberately absent rather than
+ * disabled, so nothing here promises something that doesn't work.
+ */
 export function StepMusic({ draft }: StepProps) {
   const { config, patch } = draft;
 
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-black text-white">A música</h1>
-        <p className="mt-1 text-sm text-white/50">
+        <h1 className="text-2xl font-extrabold tracking-[-0.03em] text-brand-ink">A música</h1>
+        <p className="mt-1 text-body text-brand-slate">
           Uma toca no site, outra durante a retrospectiva.
         </p>
       </header>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-bold text-white">Música do site</h2>
+        <h2 className="text-sm font-bold text-brand-ink">Música do site</h2>
         {CATALOG.map((track) => (
           <TrackOption
             key={track.src}
@@ -68,7 +70,7 @@ export function StepMusic({ draft }: StepProps) {
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
           label="Nome da faixa"
-          hint="como aparece no player"
+          hint="Como aparece no player"
           value={config.player.trackTitle}
           maxLength={80}
           onChange={(trackTitle) => patch({ player: { trackTitle } })}
@@ -83,9 +85,7 @@ export function StepMusic({ draft }: StepProps) {
 
       {config.retro.enabled && (
         <section className="space-y-3">
-          <h2 className="text-sm font-bold text-white">
-            Música da retrospectiva
-          </h2>
+          <h2 className="text-sm font-bold text-brand-ink">Música da retrospectiva</h2>
           {CATALOG.map((track) => (
             <TrackOption
               key={track.src}
@@ -100,39 +100,34 @@ export function StepMusic({ draft }: StepProps) {
   );
 }
 
-function TrackOption({
-  track,
-  selected,
-  onSelect,
-}: {
-  track: { src: string; title: string; artist: string };
+interface TrackOptionProps {
+  track: Track;
   selected: boolean;
   onSelect: () => void;
-}) {
+}
+
+function TrackOption({ track, selected, onSelect }: TrackOptionProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border p-3 transition-colors",
-        selected
-          ? "border-spotify-green bg-spotify-green/10"
-          : "border-white/10 bg-white/[0.02]",
+        "flex flex-col gap-3 rounded-card p-3 transition-colors sm:flex-row sm:items-center",
+        selected ? "bg-brand-lav ring-1 ring-brand-ink/10" : "bg-brand-mist",
       )}
     >
-      <button
-        type="button"
-        onClick={onSelect}
-        className="flex-1 text-left"
-        aria-pressed={selected}
-      >
-        <span className="block text-sm font-semibold text-white">
-          {track.title}
-        </span>
-        <span className="block text-xs text-white/45">{track.artist}</span>
+      <button type="button" onClick={onSelect} className="flex-1 text-left" aria-pressed={selected}>
+        <span className="block text-sm font-semibold text-brand-ink">{track.title}</span>
+        <span className="block text-xs text-brand-slate">{track.artist}</span>
       </button>
 
       {/* Native controls: a custom player here would be a second audio
           implementation to keep in sync with the real one on the site. */}
-      <audio src={track.src} controls preload="none" className="h-8 max-w-[190px]" />
+      <audio
+        src={track.src}
+        controls
+        preload="none"
+        aria-label={`Prévia: ${track.title}`}
+        className="w-full sm:max-w-[220px]"
+      />
     </div>
   );
 }
